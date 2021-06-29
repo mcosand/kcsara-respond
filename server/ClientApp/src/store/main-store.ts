@@ -2,8 +2,12 @@ import { action, makeObservable, observable, runInAction } from "mobx";
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 
 import { Activity } from "./model/activity";
+import { User } from "./model/user";
 
 export class MainStore {
+  @observable loadingUser: boolean = false;
+
+  @observable user?: User = undefined;
   @observable activities: Activity[] = []
   @observable isOnline: boolean = false;
   @observable isConnecting: boolean = false;
@@ -46,6 +50,16 @@ export class MainStore {
       this.isOnline = false;
     }));
 
+    return this;
+  }
+
+  @action
+  loadUser() {
+    this.loadingUser = true;
+    fetch('/api/me').then(response => response.json()).then(json => runInAction(() => {
+      this.user = json.data ?? undefined;
+      this.loadingUser = false;
+    }));
     return this;
   }
 }

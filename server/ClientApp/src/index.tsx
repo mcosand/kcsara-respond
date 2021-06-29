@@ -6,7 +6,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import { MainStore } from './store/main-store';
 
-const store = new MainStore().wire();
+const store = new MainStore().wire().loadUser();
 ReactDOM.render(
   <React.StrictMode>
     <App store={store} />
