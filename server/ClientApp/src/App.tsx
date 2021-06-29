@@ -14,12 +14,12 @@ function App(props: {store:MainStore}) {
     <Router>
       <Route exact path="/">
         <div className="App">
-          <ActivityList activities={store.activities} />
           <header className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
             <p>
               Edit <code>src/App.tsx</code> and save to reload.
             </p>
+            <p>Status: <span>{store.isOnline ? '' : 'Not '} Connected</span> {store.isConnecting ? <span>Connecting ...</span> : undefined}</p>
             <a
               className="App-link"
               href="https://reactjs.org"
