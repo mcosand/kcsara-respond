@@ -41,6 +41,8 @@ registerRoute(
       return false;
     }
 
+    if (/^\/(account|api|hub)/i.test(url.pathname)) return false;
+
     // If this looks like a URL for a resource, because it contains
     // a file extension, skip.
     if (url.pathname.match(fileExtensionRegexp)) {

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Kcsara.Respond
 {
@@ -16,6 +17,11 @@ namespace Kcsara.Respond
           .ConfigureAppConfiguration((hostingContext, config) =>
           {
             config.AddJsonFile("appsettings.local.json", optional: false, reloadOnChange: false);
+          })
+          .ConfigureLogging(logging =>
+          {
+            logging.ClearProviders();
+            logging.AddConsole();
           })
           .ConfigureWebHostDefaults(webBuilder =>
           {
