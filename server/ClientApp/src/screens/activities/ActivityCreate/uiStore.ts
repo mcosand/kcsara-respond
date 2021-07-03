@@ -1,8 +1,8 @@
 import { DateTime } from 'luxon';
 import { action, makeObservable, observable, runInAction } from "mobx";
-import { MainStore } from '../../store/main-store';
-import { GeoJsonFeature } from '../../store/model/geoJsonFeature';
-import { Loadable } from '../../store/model/loadable';
+import { MainStore } from '../../../store/main-store';
+import { GeoJsonFeature } from '../../../store/model/geoJsonFeature';
+import { Loadable } from '../../../store/model/loadable';
 
 interface Validatable<T> {
   error?: string;
@@ -33,10 +33,6 @@ export class ActivityCreateUIStore {
       return Promise.resolve(!this.selectedUnits.error);
     }),
     location: action(() => {
-      // return this.locationText.checking.then(() => {
-      //   this.locationText.error = !this.locationText.value ? 'Required' : undefined;
-      //   return !!this.locationText.error;
-      // });
       this.locationText.error = this.selectedLocation ? undefined : 'Required';
       return Promise.resolve(!this.locationText.error);
     }),

@@ -1,13 +1,12 @@
 import React from 'react';
 import { Autocomplete,  Button, Card, CardContent, CardActions, Checkbox, FormControl, FormControlLabel, FormHelperText, 
-  FormLabel, FormGroup, IconButton, TextField, Grid } from '@material-ui/core';
-import MapIcon from '@material-ui/icons/Map';
+  FormLabel, FormGroup, TextField } from '@material-ui/core';
 import { observer } from 'mobx-react';
 
 import { MobileDateTimePicker as DateTimePicker } from '@material-ui/lab';
-import { MainStore } from '../../store/main-store';
+import { MainStore } from '../../../store/main-store';
 import { ActivityCreateUIStore } from './uiStore';
-import { Page } from '../../components/Page';
+import { Page } from '../../../components/Page';
 
 export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
   const uiStore = React.useMemo(() => new ActivityCreateUIStore(store), [store]);

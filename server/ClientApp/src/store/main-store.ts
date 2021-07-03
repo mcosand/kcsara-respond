@@ -1,5 +1,6 @@
 import { action, computed, makeObservable, observable, onBecomeObserved, runInAction } from "mobx";
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { Campaign as ActivityIcon, AssignmentInd as MeIcon, Air as OtherIcon } from "@material-ui/icons";
 import { createBrowserHistory } from 'history';
 
 import { Activity } from "./model/activity";
@@ -21,27 +22,23 @@ export class MainStore {
   @observable locationSearchResults: Loadable<GeoJsonFeature[]> = { loading: false, loaded: true, obj: []};
 
   private hub: HubConnection
-  private routeMap: {[key: string]: RouteInfo} = {}
-  private readonly routing: RouterStore;
-
-  public readonly history :SynchronizedHistory
+  @observable private routeMap: {[key: string]: RouteInfo} = {}
+  @observable pathname: string;
+  history = createBrowserHistory();
 
   constructor() {
-    const browserHistory = createBrowserHistory();
-    this.routing = new RouterStore();
-    this.history = syncHistoryWithStore(browserHistory, this.routing);
-
     makeObservable(this)
     this.hub = new HubConnectionBuilder()
       .withUrl(`${process.env.PUBLIC_URL}/hub`)
       .withAutomaticReconnect([0,0,1000])
       .build();
     onBecomeObserved(this, "activities", () => this.loadActivities());
+    this.pathname = this.history.location.pathname;
   }
 
   @computed
   get breadcrumbs() {
-    const parts = this.routing.location.pathname.split('/').filter(f => f);
+    const parts = this.pathname.split('/').filter(f => f);
     return parts.map((_p, i) => {
       const to = `/${parts.slice(0, i + 1).join('/')}`;
       const name = this.routeMap[to] ? this.routeMap[to].name : to;
@@ -49,8 +46,18 @@ export class MainStore {
     });
   }
 
+  @computed get bottomBarActions() {
+    return [
+      { path: '/activity', name:'Activity', Icon: ActivityIcon, isPrimary: false },
+      { path: '/me', name:'My Status', Icon: MeIcon, isPrimary: true },
+      { path: '#', name:'??', Icon: OtherIcon, isPrimary: false },
+    ].map(a => ({ ...a, isSelected: this.pathname.startsWith(a.path) }));
+  }
+
+
   @action
   wire() {
+    this.history.listen(location => runInAction(() => this.pathname = location.pathname));
     this.hub.onclose(() => runInAction(() => {
       this.isOnline = false;
       this.isConnecting = false;
