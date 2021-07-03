@@ -7,21 +7,21 @@ import { observer } from 'mobx-react';
 import { MobileDateTimePicker as DateTimePicker } from '@material-ui/lab';
 import { MainStore } from '../../store/main-store';
 import { ActivityCreateUIStore } from './uiStore';
+import { Page } from '../../components/Page';
 
 export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
   const uiStore = React.useMemo(() => new ActivityCreateUIStore(store), [store]);
 
   return (
-<Grid container spacing={2} justifyContent="center">
-  <Grid item container direction="column" xs={12} sm={10} md={8} lg={6} xl={5}>
-      <Card style={{ padding: '1em', flexGrow: 1 }}>
-        <CardContent>
-        <h3>Create an Activity</h3>
+    <Page store={store}>
+      <Card style={{ flexGrow: 1 }}>
+        <CardContent style={{paddingTop:0}}>
+        <h3 style={{marginTop: '.5rem'}}>Create an Activity</h3>
         {uiStore.locationText.error}
         <div>
           <TextField
             label="DEM Number"
-            value={uiStore.demNumber.value}
+            value={uiStore.demNumber.value ?? ''}
             error={!!uiStore.demNumber.error}
             helperText={uiStore.demNumber.error}
             onChange={evt => uiStore.setNumber(evt.currentTarget.value)}
@@ -54,15 +54,10 @@ export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
         </div>
         <div style={{display: 'flex', alignItems: 'center'}}>
           <Autocomplete
-            getOptionLabel={(option) => option.text}
+            getOptionLabel={(option) => option.properties.title}
             filterOptions={x => x}
-            options={[{text:'Alpental Upper Lot', coords: [47.5, -121.52] as [number,number], wkid: 'abd'}]}
-            isOptionEqualToValue={(option, value) => {
-              return option?.text === value?.text
-                && option?.coords?.[0] === value?.coords?.[0]
-                && option?.coords?.[1] === value?.coords?.[1]
-                && option?.wkid === value?.wkid;
-            }}
+            options={uiStore.locationSearchResults.obj ?? []}
+            isOptionEqualToValue={uiStore.areLocationsEqual}
             autoComplete
             includeInputInList
             filterSelectedOptions
@@ -84,10 +79,10 @@ export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
             )}
             renderOption={(props, option) => {
               return (
-                <li key={option.text} {...props}>{option.text} {JSON.stringify(option.coords)}</li>
+                <li key={option.id} {...props}>{option.properties.title} {JSON.stringify(option.geometry.coordinates)}</li>
               )
             }}
-          />
+          />        
           {/* <IconButton color="primary" aria-label="view map" component="div">
             <MapIcon />
           </IconButton> */}
@@ -114,8 +109,7 @@ export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
           <Button size="small" disabled={uiStore.saving} onClick={() => uiStore.submit()}>Create</Button>
         </CardActions>
       </Card>
-  </Grid>
-</Grid>
+    </Page>
   );
 }
 

@@ -5,6 +5,15 @@ html, body, #root {
   background-color: #eee;
 }
 
+.leaflet-parent .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.MuiCardActions-root {
+  flex-direction: row-reverse;
+}
+
 .App {
   text-align: center;
 }

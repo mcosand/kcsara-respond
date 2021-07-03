@@ -1,25 +1,52 @@
-import { action, makeObservable, observable, onBecomeObserved, runInAction } from "mobx";
+import { action, computed, makeObservable, observable, onBecomeObserved, runInAction } from "mobx";
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { createBrowserHistory } from 'history';
 
 import { Activity } from "./model/activity";
 import { User } from "./model/user";
 import { Loadable } from "./model/loadable";
+import { GeoJsonFeature } from "./model/geoJsonFeature";
+import { RouterStore, syncHistoryWithStore, SynchronizedHistory } from "mobx-react-router";
+
+export interface RouteInfo {
+  path: string,
+  name: string
+}
 
 export class MainStore {
   @observable user: Loadable<User> = { loading: false, loaded: false };
   @observable activities: Loadable<Activity[]> = { loading: false, loaded: false };
   @observable isOnline: boolean = false;
   @observable isConnecting: boolean = false;
-  
+  @observable locationSearchResults: Loadable<GeoJsonFeature[]> = { loading: false, loaded: true, obj: []};
+
   private hub: HubConnection
+  private routeMap: {[key: string]: RouteInfo} = {}
+  private readonly routing: RouterStore;
+
+  public readonly history :SynchronizedHistory
 
   constructor() {
+    const browserHistory = createBrowserHistory();
+    this.routing = new RouterStore();
+    this.history = syncHistoryWithStore(browserHistory, this.routing);
+
     makeObservable(this)
     this.hub = new HubConnectionBuilder()
       .withUrl(`${process.env.PUBLIC_URL}/hub`)
       .withAutomaticReconnect([0,0,1000])
       .build();
     onBecomeObserved(this, "activities", () => this.loadActivities());
+  }
+
+  @computed
+  get breadcrumbs() {
+    const parts = this.routing.location.pathname.split('/').filter(f => f);
+    return parts.map((_p, i) => {
+      const to = `/${parts.slice(0, i + 1).join('/')}`;
+      const name = this.routeMap[to] ? this.routeMap[to].name : to;
+      return { to, name, isLast: i === parts.length - 1 };
+    });
   }
 
   @action
@@ -90,8 +117,25 @@ export class MainStore {
 
   @action
   public async lookupLocationAsync(fromText: string) {
-    return Promise.resolve({ list: [
-      { text: 'Alpental Maintenance Lot', coords: [47.123, -121.5234], wkid: 'abc' }
-    ]})
+    if (!fromText) {
+      this.locationSearchResults = { loading: false, loaded: true, obj: [] };
+      return;
+    }
+
+    this.locationSearchResults.loading = true;
+    return await fetch(`/api/locations?category=command&q=${encodeURIComponent(fromText)}`)
+        .then(response => response.json())
+        .then(json => runInAction(() => {
+          this.locationSearchResults.loading = false;
+          this.locationSearchResults.obj = json.data.features;
+        }));
+  }
+
+  @action
+  public registerRoutes(list: { path: string, name: string }[]) {
+    for (var i=0; i<list.length; i++) {
+      this.routeMap[list[i].path] = list[i];
+    }
+    console.log('register routes', list, JSON.parse(JSON.stringify(this.routeMap)));
   }
 }

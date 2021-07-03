@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 
 namespace Kcsara.Respond.Data.Migrations.SqlServerMigrations
 {
@@ -81,6 +82,36 @@ namespace Kcsara.Respond.Data.Migrations.SqlServerMigrations
                     b.HasIndex("ActivityId");
 
                     b.ToTable("RespondingUnits");
+                });
+
+            modelBuilder.Entity("Kcsara.Respond.Data.ActivityRow", b =>
+                {
+                    b.OwnsOne("Kcsara.Respond.Data.ActivityLocation", "Location", b1 =>
+                        {
+                            b1.Property<Guid>("ActivityRowId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Geometry>("Geometry")
+                                .HasColumnType("geography");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("PropertiesJson")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Wkid")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("ActivityRowId");
+
+                            b1.ToTable("Activities");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ActivityRowId");
+                        });
+
+                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("Kcsara.Respond.Data.RespondingUnitRow", b =>

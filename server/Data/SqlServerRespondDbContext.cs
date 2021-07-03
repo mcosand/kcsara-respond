@@ -2,8 +2,7 @@
 using Microsoft.Extensions.Configuration;
 
 namespace Kcsara.Respond.Data
-{
-  public class SqlServerRespondDbContext : RespondDbContext
+{  public class SqlServerRespondDbContext : RespondDbContext
   {
     public static readonly string CONNECTION_CONFIG = "SqlServerRespond";
 
@@ -13,7 +12,7 @@ namespace Kcsara.Respond.Data
 
     protected override void SetupPlatform(DbContextOptionsBuilder options)
     {
-      options.UseSqlServer(config.GetConnectionString(CONNECTION_CONFIG));
+      options.UseSqlServer(config.GetConnectionString(CONNECTION_CONFIG), x => x.UseNetTopologySuite());
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

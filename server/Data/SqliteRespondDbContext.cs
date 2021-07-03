@@ -13,7 +13,7 @@ namespace Kcsara.Respond.Data
 
     protected override void SetupPlatform(DbContextOptionsBuilder options)
     {
-      options.UseSqlite(config.GetConnectionString(CONNECTION_CONFIG));
+      options.UseSqlite(config.GetConnectionString(CONNECTION_CONFIG), x => x.UseNetTopologySuite());
     }
   }
 }

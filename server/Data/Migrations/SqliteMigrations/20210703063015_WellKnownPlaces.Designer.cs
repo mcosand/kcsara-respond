@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 
 namespace Kcsara.Respond.Data.Migrations.SqliteMigrations
 {
     [DbContext(typeof(SqliteRespondDbContext))]
-    [Migration("20210701081843_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210703063015_WellKnownPlaces")]
+    partial class WellKnownPlaces
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -79,6 +80,36 @@ namespace Kcsara.Respond.Data.Migrations.SqliteMigrations
                     b.HasIndex("ActivityId");
 
                     b.ToTable("RespondingUnits");
+                });
+
+            modelBuilder.Entity("Kcsara.Respond.Data.ActivityRow", b =>
+                {
+                    b.OwnsOne("Kcsara.Respond.Data.ActivityLocation", "Location", b1 =>
+                        {
+                            b1.Property<Guid>("ActivityRowId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Geometry>("Geometry")
+                                .HasColumnType("GEOMETRY");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("PropertiesJson")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<string>("Wkid")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("ActivityRowId");
+
+                            b1.ToTable("Activities");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ActivityRowId");
+                        });
+
+                    b.Navigation("Location");
                 });
 
             modelBuilder.Entity("Kcsara.Respond.Data.RespondingUnitRow", b =>

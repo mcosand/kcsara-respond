@@ -1,6 +1,8 @@
 import { DateTime } from 'luxon';
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { MainStore } from '../../store/main-store';
+import { GeoJsonFeature } from '../../store/model/geoJsonFeature';
+import { Loadable } from '../../store/model/loadable';
 
 interface Validatable<T> {
   error?: string;
@@ -14,14 +16,12 @@ export class ActivityCreateUIStore {
   @observable title: Validatable<string> = { value: "" };
   @observable demNumber: Validatable<string|undefined> = { value: undefined };
   @observable locationText: Validatable<string> = {value: "" };
-  @observable selectedLocation: { text: string, coords: [number, number], wkid?: string }|null = null;
+  get locationSearchResults(): Loadable<GeoJsonFeature[]> { return this.mainStore.locationSearchResults };
+  @observable selectedLocation: GeoJsonFeature|null = null;
 
   @observable selectedUnits: Validatable<{[unitId:string]: boolean }> = { value: {} };
   @observable availableUnits: { name: string, id: string }[] = [ {name:'ESAR', id:'esr'}, { name:'SMR', id:'smx'}];
   @observable createMap: boolean = true;
-
-  @observable locationCoords?: [number, number]
-  @observable locationWkid?: string
 
   @observable saving: boolean = false;
   @observable saveError?: string;
@@ -76,12 +76,19 @@ export class ActivityCreateUIStore {
   setLocationText(text: string) {
     this.locationText = { value: text, error: undefined };
     this.selectedLocation = null;
+    this.mainStore.lookupLocationAsync(text);
   }
   
   @action
-  setSelectedLocation(location: {text:string, coords:[number, number], wkid?: string}|null) {
+  setSelectedLocation(location: GeoJsonFeature|null) {
     this.selectedLocation = location;
-    this.locationText = {value: location?.text ?? '', error: undefined };
+    this.locationText = {value: location?.properties?.title ?? '', error: undefined };
+  }
+
+  areLocationsEqual(a: GeoJsonFeature, b: GeoJsonFeature) {
+    if (a.id && a.id === b.id) return true;
+    if (JSON.stringify(a.geometry.coordinates) !== JSON.stringify(b.geometry.coordinates)) return false;
+    return a.properties.title === b.properties.title;
   }
 
   @action
@@ -103,27 +110,30 @@ export class ActivityCreateUIStore {
 
   @action
   submit() {
-    this.saving = true;
-    this.saveError = undefined;
     this.validateAsync().then(result => {
       if (!result) {
         return;
       }
-      return this.mainStore.createActivityAsync({
-        number: this.demNumber.value,
-        title: this.title.value,
-        startTime: this.startTime.toMillis(),
-        location: this.selectedLocation,
-        createMap: this.createMap,
-        units: Object.entries(this.selectedUnits.value).filter(([_, value]) => value).map(([key]) => key)
-      }).then(result => runInAction(() => {
-        console.log('finished saving', result);
-        this.saving = false;
+      runInAction(() => {
+        this.saving = true;
         this.saveError = undefined;
-      })).catch(err => runInAction(() => {
-        this.saving = false;
-        this.saveError = err.message;
-      }))
+    
+        return this.mainStore.createActivityAsync({
+          number: this.demNumber.value,
+          title: this.title.value,
+          startTime: this.startTime.toMillis(),
+          location: this.selectedLocation,
+          createMap: this.createMap,
+          units: Object.entries(this.selectedUnits.value).filter(([_, value]) => value).map(([key]) => key)
+        }).then(result => runInAction(() => {
+          console.log('finished saving', result);
+          this.saving = false;
+          this.saveError = undefined;
+        })).catch(err => runInAction(() => {
+          this.saving = false;
+          this.saveError = err.message;
+        }))
+      });
     })
   }
 }

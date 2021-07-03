@@ -1,6 +1,9 @@
+using System;
 using System.Security.Claims;
+using System.Text.Json;
 using Kcsara.Respond.Data;
 using Kcsara.Respond.Hubs;
+using Kcsara.Respond.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect.Claims;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
@@ -36,6 +40,13 @@ namespace Kcsara.Respond
       {
         services.AddDbContext<RespondDbContext, SqliteRespondDbContext>();
       }
+
+      services.AddSingleton<IMapService, SARTopoMapService>();
+      services.AddSingleton<WellKnownPlacesService>();
+      services.AddHostedService<WellKnownPlacesService.BackgroundWellKnownPlacesSync>(p => new WellKnownPlacesService.BackgroundWellKnownPlacesSync(
+        p.GetRequiredService<WellKnownPlacesService>(),
+        p.GetRequiredService<ILogger<WellKnownPlacesService.BackgroundWellKnownPlacesSync>>()
+      ));
 
       services.AddSignalR();
       services.AddControllersWithViews();
@@ -88,7 +99,14 @@ namespace Kcsara.Respond
 
         if (env.IsDevelopment())
         {
-          spa.UseReactDevelopmentServer(npmScript: "start");
+          if (Configuration["npmServer"] == "external") {
+            Console.WriteLine("Proxying to SPA Dev server at http://localhost:3000");
+            spa.UseProxyToSpaDevelopmentServer("http://localhost:3000");
+          }
+          else
+          {
+            spa.UseReactDevelopmentServer(npmScript: "start");
+          }
         }
       });
     }
