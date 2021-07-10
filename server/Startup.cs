@@ -41,11 +41,18 @@ namespace Kcsara.Respond
         services.AddDbContext<RespondDbContext, SqliteRespondDbContext>();
       }
 
+      services.AddSingleton<IConfiguration>(Configuration);
       services.AddSingleton<IMapService, SARTopoMapService>();
       services.AddSingleton<WellKnownPlacesService>();
       services.AddHostedService<WellKnownPlacesService.BackgroundWellKnownPlacesSync>(p => new WellKnownPlacesService.BackgroundWellKnownPlacesSync(
         p.GetRequiredService<WellKnownPlacesService>(),
         p.GetRequiredService<ILogger<WellKnownPlacesService.BackgroundWellKnownPlacesSync>>()
+      ));
+
+      services.AddSingleton<IMembersService, D4HMembersService>();
+      services.AddHostedService<D4HMembersService.BackgroundD4HSync>(p => new D4HMembersService.BackgroundD4HSync(
+        p.GetRequiredService<IMembersService>() as D4HMembersService,
+        p.GetRequiredService<ILogger<D4HMembersService.BackgroundD4HSync>>()
       ));
 
       services.AddSignalR();

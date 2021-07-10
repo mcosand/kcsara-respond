@@ -4,7 +4,7 @@ using NetTopologySuite.Geometries;
 
 namespace Kcsara.Respond.Data.Migrations.SqliteMigrations
 {
-    public partial class WellKnownPlaces : Migration
+    public partial class WellKnownUnits : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -38,6 +38,7 @@ namespace Kcsara.Respond.Data.Migrations.SqliteMigrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    KnownUnitId = table.Column<string>(type: "TEXT", nullable: true),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     Requested = table.Column<long>(type: "INTEGER", nullable: false),
                     Activated = table.Column<long>(type: "INTEGER", nullable: true),

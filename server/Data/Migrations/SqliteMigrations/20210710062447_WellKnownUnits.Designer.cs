@@ -10,8 +10,8 @@ using NetTopologySuite.Geometries;
 namespace Kcsara.Respond.Data.Migrations.SqliteMigrations
 {
     [DbContext(typeof(SqliteRespondDbContext))]
-    [Migration("20210703063015_WellKnownPlaces")]
-    partial class WellKnownPlaces
+    [Migration("20210710062447_WellKnownUnits")]
+    partial class WellKnownUnits
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -61,6 +61,9 @@ namespace Kcsara.Respond.Data.Migrations.SqliteMigrations
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("ActivityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KnownUnitId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")

@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable, onBecomeObserved, runInAction } from "mobx";
+import { action, computed, makeObservable, observable, onBecomeObserved, runInAction, toJS } from "mobx";
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { Campaign as ActivityIcon, AssignmentInd as MeIcon, Air as OtherIcon } from "@material-ui/icons";
 import { createBrowserHistory } from 'history';
@@ -7,7 +7,9 @@ import { Activity } from "./model/activity";
 import { User } from "./model/user";
 import { Loadable } from "./model/loadable";
 import { GeoJsonFeature } from "./model/geoJsonFeature";
-import { RouterStore, syncHistoryWithStore, SynchronizedHistory } from "mobx-react-router";
+import { Group } from "./model/group";
+import { Branding } from "./model/branding";
+import { Member } from "./model/member";
 
 export interface RouteInfo {
   path: string,
@@ -16,14 +18,18 @@ export interface RouteInfo {
 
 export class MainStore {
   @observable user: Loadable<User> = { loading: false, loaded: false };
+  @observable member?: Member;
+  @observable units: Loadable<Group[]> = { loading: false, loaded: false, obj: []};
   @observable activities: Loadable<Activity[]> = { loading: false, loaded: false };
   @observable isOnline: boolean = false;
   @observable isConnecting: boolean = false;
   @observable locationSearchResults: Loadable<GeoJsonFeature[]> = { loading: false, loaded: true, obj: []};
-
+  @observable branding: Branding = { name: 'KCSARA', color: '#F36E20' }
   private hub: HubConnection
   @observable private routeMap: {[key: string]: RouteInfo} = {}
   @observable pathname: string;
+  @observable parentSite: string = '/';
+
   history = createBrowserHistory();
 
   constructor() {
@@ -39,10 +45,16 @@ export class MainStore {
   @computed
   get breadcrumbs() {
     const parts = this.pathname.split('/').filter(f => f);
+
+    const getName = (to: string) => {
+      let name = this.routeMap[to] ? this.routeMap[to].name : to;
+      if (parts.length === 1) name = this.branding.name + ' ' + name;
+      return name;
+    }
+
     return parts.map((_p, i) => {
       const to = `/${parts.slice(0, i + 1).join('/')}`;
-      const name = this.routeMap[to] ? this.routeMap[to].name : to;
-      return { to, name, isLast: i === parts.length - 1 };
+      return { to, name: getName(to), isLast: i === parts.length - 1 };
     });
   }
 
@@ -54,6 +66,9 @@ export class MainStore {
     ].map(a => ({ ...a, isSelected: this.pathname.startsWith(a.path) }));
   }
 
+  @computed get belongsToSite() {
+    return !this.branding.id || (this.member?.groups ?? []).filter(g => g.id === this.branding.id).length > 0;
+  }
 
   @action
   wire() {
@@ -72,12 +87,11 @@ export class MainStore {
     }));
 
     this.isConnecting = true;
+    this.hub.on('Initialize', message => runInAction(() => this.handleStartupData(message)));
     this.hub.start().then(() => runInAction(() => {
       this.isConnecting = false;
       this.isOnline = true;
-      this.hub.on('ReceiveMessage', message => {
-        console.log('received message ', message);
-      });
+      console.log('wiring hub events')
     }))
     .catch(() => runInAction(() => {
       this.isConnecting = false;
@@ -88,19 +102,14 @@ export class MainStore {
   }
 
   @action
-  loadUser() {
-    this.user.loading = true;
-    this.user.loaded = false;
-    fetch('/api/me').then(response => response.json()).then(json => runInAction(() => {
-      this.user = { loading: false, loaded: true, obj: json.data ?? undefined };
-      this.user.loading = false;
-      this.user.loaded = true;
-    }))
-    .catch(() => {
-      this.user.loading = false;
-      this.user.loaded = false;
-    })
-    return this;
+  handleStartupData(json: string) {
+    const data = JSON.parse(json).data;
+    console.log('handleStartupData', this, data)
+    this.user = { loading: false, loaded: true, obj: data.user ?? undefined };
+    this.member = data.member;
+    this.units = { loading: false, loaded: true, obj: data.units ?? [] };
+    this.branding = data.branding ?? this.branding;
+    this.parentSite = data.parentSite;
   }
 
   @action
@@ -143,6 +152,6 @@ export class MainStore {
     for (var i=0; i<list.length; i++) {
       this.routeMap[list[i].path] = list[i];
     }
-    console.log('register routes', list, JSON.parse(JSON.stringify(this.routeMap)));
+    //console.log('register routes', list, JSON.parse(JSON.stringify(this.routeMap)));
   }
 }

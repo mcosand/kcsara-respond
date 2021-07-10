@@ -6,14 +6,14 @@ import { observer } from 'mobx-react';
 import { MobileDateTimePicker as DateTimePicker } from '@material-ui/lab';
 import { MainStore } from '../../../store/main-store';
 import { ActivityCreateUIStore } from './uiStore';
-import { Page } from '../../../components/Page';
+import { NavPage } from '../../../components/NavPage';
 
 export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
   const uiStore = React.useMemo(() => new ActivityCreateUIStore(store), [store]);
 
   return (
-    <Page store={store}>
-      <Card style={{ flexGrow: 1 }}>
+    <NavPage store={store}>
+      <Card style={{ flexGrow: 1, paddingBottom: '1rem' }}>
         <CardContent style={{paddingTop:0}}>
         <h3 style={{marginTop: '.5rem'}}>Create an Activity</h3>
         {uiStore.locationText.error}
@@ -58,6 +58,8 @@ export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
             options={uiStore.locationSearchResults.obj ?? []}
             isOptionEqualToValue={uiStore.areLocationsEqual}
             autoComplete
+            autoSelect
+            handleHomeEndKeys={false}
             includeInputInList
             filterSelectedOptions
             sx={{flex:'1 1 auto'}}
@@ -90,10 +92,10 @@ export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
           <FormControlLabel label="Create SARTopo Map" control={<Checkbox checked={uiStore.createMap} onChange={evt => uiStore.setCreateMap(evt.currentTarget.checked)} />}/>
         </div>
         <div>
-          <FormControl required component="fieldset" variant="standard" error={!!uiStore.selectedUnits.error}>
+          <FormControl required component="fieldset" variant="standard" error={!!uiStore.selectedUnits.error} style={{width: '100%'}}>
             <FormLabel component="legend">Requested Units</FormLabel>
-            <FormGroup>
-              {uiStore.availableUnits.map(u => (
+            <FormGroup style={{display: 'grid', gridTemplateColumns: '45% 45%'}}>
+              {store.units.obj?.map(u => (
                 <FormControlLabel key={u.id} label={u.name} control={
                   <Checkbox name={u.id} checked={!!uiStore.selectedUnits.value[u.id]} onChange={evt => uiStore.toggleUnit(evt.currentTarget.name, evt.currentTarget.checked)} />
                 }/>
@@ -104,11 +106,11 @@ export const ActivityCreate: React.FC<{ store: MainStore }> = ({ store }) => {
         </div>
         <div>{uiStore.saveError}</div>
         </CardContent>
-        <CardActions>
-          <Button size="small" disabled={uiStore.saving} onClick={() => uiStore.submit()}>Create</Button>
+        <CardActions style={{paddingRight:'1rem'}}>
+          <Button size="small" variant="contained" disabled={uiStore.saving} onClick={() => uiStore.submit()}>Create</Button>
         </CardActions>
       </Card>
-    </Page>
+    </NavPage>
   );
 }
 

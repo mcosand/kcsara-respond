@@ -22,8 +22,8 @@ namespace Kcsara.Respond.Controllers
     }
 
     [HttpGet]
-    public ApiResult<GeoJsonFeatureCollection> List([FromQuery] string q, [FromQuery] string category) {
-      return new ApiResult<GeoJsonFeatureCollection>
+    public ApiResultViewModel<GeoJsonFeatureCollection> List([FromQuery] string q, [FromQuery] string category) {
+      return new ApiResultViewModel<GeoJsonFeatureCollection>
       {
         Data = wkpService.Search(q, category)
       };
@@ -31,9 +31,9 @@ namespace Kcsara.Respond.Controllers
 
     [HttpGet]
     [Route("syncnow")]
-    public ApiResult<string> SyncNow() {
+    public ApiResultViewModel<string> SyncNow() {
       wkpService.RunNow();
-      return new ApiResult<string> { Data = "OK" };
+      return new ApiResultViewModel<string> { Data = "OK" };
     }
   }
 }

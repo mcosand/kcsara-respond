@@ -7,6 +7,7 @@ namespace Kcsara.Respond.Data
   public class RespondingUnitRow
   {
     public Guid Id { get; set; }
+    public string KnownUnitId { get; set; }
     public string Name { get; set; }
     public long Requested { get; set; }
     public long? Activated { get; set; }

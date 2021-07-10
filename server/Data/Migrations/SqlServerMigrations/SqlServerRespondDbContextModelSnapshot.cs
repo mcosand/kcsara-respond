@@ -65,6 +65,9 @@ namespace Kcsara.Respond.Data.Migrations.SqlServerMigrations
                     b.Property<Guid>("ActivityId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("KnownUnitId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 

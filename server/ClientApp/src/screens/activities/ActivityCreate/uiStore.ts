@@ -20,7 +20,6 @@ export class ActivityCreateUIStore {
   @observable selectedLocation: GeoJsonFeature|null = null;
 
   @observable selectedUnits: Validatable<{[unitId:string]: boolean }> = { value: {} };
-  @observable availableUnits: { name: string, id: string }[] = [ {name:'ESAR', id:'esr'}, { name:'SMR', id:'smx'}];
   @observable createMap: boolean = true;
 
   @observable saving: boolean = false;
@@ -121,10 +120,8 @@ export class ActivityCreateUIStore {
           location: this.selectedLocation,
           createMap: this.createMap,
           units: Object.entries(this.selectedUnits.value).filter(([_, value]) => value).map(([key]) => key)
-        }).then(result => runInAction(() => {
-          console.log('finished saving', result);
-          this.saving = false;
-          this.saveError = undefined;
+        }).then(() => runInAction(() => {
+          this.mainStore.history.push('/activity');
         })).catch(err => runInAction(() => {
           this.saving = false;
           this.saveError = err.message;

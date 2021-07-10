@@ -23,7 +23,7 @@ namespace Kcsara.Respond.Data
     public long Updated { get; set; }
     public string Updater { get; set; }
 
-    public ICollection<RespondingUnitRow> Units { get; set; }
+    public ICollection<RespondingUnitRow> Units { get; set; } = new List<RespondingUnitRow>();
   }
 
   [Owned]

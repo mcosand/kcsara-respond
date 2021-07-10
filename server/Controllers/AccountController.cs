@@ -28,11 +28,11 @@ namespace Kcsara.Respond.Controllers
     }
 
     [Route("/api/me")]
-    public ApiResult<User> Me()
+    public ApiResultViewModel<UserViewModel> Me()
     {
-      return new ApiResult<User>
+      return new ApiResultViewModel<UserViewModel>
       {
-        Data = User.Identity.IsAuthenticated ? new User { Email = User.FindFirst("email").Value, Name = User.Identity.Name } : null
+        Data = User.Identity.IsAuthenticated ? new UserViewModel { Email = User.FindFirst("email").Value, Name = User.Identity.Name } : null
       };
     }
   }
