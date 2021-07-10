@@ -35,7 +35,7 @@ namespace Kcsara.Respond.Hubs
       var unitBranding = (config["unitDomains"] ?? "")
         .Split(';')
         .Select(unitText => unitText.Split(' '))
-        .Where(f => f[0].Equals(Context.GetHttpContext().Request.Host.Value, System.StringComparison.OrdinalIgnoreCase))
+        .Where(f => f[0].Equals(Context.GetHttpContext().Request.Host.Value, StringComparison.OrdinalIgnoreCase))
         .Select(parts => new UnitBranding
           {
             Id = parts[1],

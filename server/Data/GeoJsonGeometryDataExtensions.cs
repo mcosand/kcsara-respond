@@ -13,7 +13,7 @@ namespace Kcsara.Respond.Data
       {
         case "Point":
           double[] coords = jsonGeometry.GetPointCoordinates();
-          return new Point(new Coordinate(coords[0], coords[1]));
+          return new Point(new Coordinate(coords[0], coords[1])) { SRID = 4326 };
 
         default:
           throw new ApplicationException("Unhandled geometry type " + jsonGeometry.Type);

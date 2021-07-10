@@ -17,7 +17,13 @@ namespace Kcsara.Respond
       Host.CreateDefaultBuilder(args)
           .ConfigureAppConfiguration((hostingContext, config) =>
           {
-            config.AddJsonFile("appsettings.local.json", optional: false, reloadOnChange: false);
+            config.AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true);
+            config.AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+            if (hostingContext.HostingEnvironment.IsDevelopment())
+            {
+              config.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
+            }
+            config.AddEnvironmentVariables();
           })
           .ConfigureLogging(logging =>
           {

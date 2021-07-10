@@ -64,6 +64,7 @@ namespace Kcsara.Respond.Controllers
 
         var unitRow = new RespondingUnitRow
         {
+          Id = Guid.NewGuid(),
           KnownUnitId = unit.Id,
           Name = unit.Name,
           Activity = row,
